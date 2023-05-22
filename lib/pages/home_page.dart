@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:simple_note/models/note.dart';
+import 'package:simple_note/services/database_service.dart';
 
 import '../component/card_note.dart';
 
@@ -54,7 +55,18 @@ class _HomePageState extends State<HomePage> {
               itemCount: box.length,
               itemBuilder: (context, index) {
                 Note currentNote = box.getAt(index);
-                return CardNote(note: currentNote);
+                return Dismissible(
+                  key: Key(box.values.toList()[index].key.toString()),
+                  child: CardNote(note: currentNote),
+                  onDismissed: (_) async {
+                    await DatabaseService().deleteNote(currentNote);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Data telah dihapus"),
+                      ),
+                    );
+                  },
+                );
               },
             );
           }
@@ -63,10 +75,11 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await context.pushNamed('addNote');
-          setState(() {});
+          await context.pushNamed('addNote').then((_) {
+            setState(() {});
+          });
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.heart_broken),
       ),
     );
   }

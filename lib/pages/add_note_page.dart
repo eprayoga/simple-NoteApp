@@ -12,8 +12,13 @@ class AddNotePage extends StatefulWidget {
 }
 
 class _AddNotePageState extends State<AddNotePage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   late TextEditingController _titleCtrl;
   late TextEditingController _descriptionCtrl;
+
+  final DatabaseService dbSevice = DatabaseService();
+
   @override
   void initState() {
     _titleCtrl = TextEditingController();
@@ -37,43 +42,63 @@ class _AddNotePageState extends State<AddNotePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: ListView(
-          children: [
-            TextFormField(
-              controller: _titleCtrl,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                validator: (value) {
+                  if (value == '') {
+                    return "Judul tidak boleh kosong!";
+                  } else {
+                    return null;
+                  }
+                },
+                controller: _titleCtrl,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const InputDecoration(
+                  hintText: "Title",
+                  border: InputBorder.none,
+                ),
               ),
-              decoration: const InputDecoration(
-                hintText: "Title",
-                border: InputBorder.none,
-              ),
-            ),
-            // const Divider(thickness: 1),
-            TextFormField(
-              keyboardType: TextInputType.multiline,
-              controller: _descriptionCtrl,
-              minLines: null,
-              maxLines: null,
-              decoration: const InputDecoration(
-                hintText: "Description",
-                border: InputBorder.none,
-              ),
-            )
-          ],
+              // const Divider(thickness: 1),
+              TextFormField(
+                validator: (value) {
+                  if (value == '') {
+                    return "Deskripsi tidak boleh kosong!";
+                  } else {
+                    return null;
+                  }
+                },
+                keyboardType: TextInputType.multiline,
+                controller: _descriptionCtrl,
+                minLines: null,
+                maxLines: null,
+                decoration: const InputDecoration(
+                  hintText: "Description",
+                  border: InputBorder.none,
+                ),
+              )
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          Note note = Note(
-            title: _titleCtrl.text,
-            desc: _descriptionCtrl.text,
-            createdAt: DateTime.now().toIso8601String(),
-          );
+          if (_formKey.currentState!.validate()) {
+            Note note = Note(
+              title: _titleCtrl.text,
+              desc: _descriptionCtrl.text,
+              createdAt: DateTime.now().toIso8601String(),
+            );
 
-          await DatabaseService().addNote(note);
-          GoRouter.of(context).pop();
+            await dbSevice.addNote(note).then((_) {
+              GoRouter.of(context).pop();
+            });
+          }
         },
         label: const Text("Save Note"),
       ),

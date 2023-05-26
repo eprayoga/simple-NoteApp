@@ -5,7 +5,9 @@ import 'package:simple_note/services/database_service.dart';
 import '../models/note.dart';
 
 class AddNotePage extends StatefulWidget {
-  const AddNotePage({super.key});
+  const AddNotePage({super.key, this.note});
+
+  final Note? note;
 
   @override
   State<AddNotePage> createState() => _AddNotePageState();
@@ -23,6 +25,11 @@ class _AddNotePageState extends State<AddNotePage> {
   void initState() {
     _titleCtrl = TextEditingController();
     _descriptionCtrl = TextEditingController();
+
+    if (widget.note != null) {
+      _titleCtrl.text = widget.note!.title;
+      _descriptionCtrl.text = widget.note!.desc;
+    }
     super.initState();
   }
 
@@ -38,7 +45,9 @@ class _AddNotePageState extends State<AddNotePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
-        title: const Text("Add new notes"),
+        title: Text(
+          widget.note != null ? "Edit Note" : "Add new notes",
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -95,9 +104,15 @@ class _AddNotePageState extends State<AddNotePage> {
               createdAt: DateTime.now().toIso8601String(),
             );
 
-            await dbSevice.addNote(note).then((_) {
-              GoRouter.of(context).pop();
-            });
+            if (widget.note != null) {
+              dbSevice.updateNote(widget.note!.key, note).then((_) {
+                GoRouter.of(context).pop();
+              });
+            } else {
+              dbSevice.addNote(note).then((_) {
+                GoRouter.of(context).pop();
+              });
+            }
           }
         },
         label: const Text("Save Note"),

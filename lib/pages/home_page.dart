@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
             setState(() {});
           });
         },
-        child: const Icon(Icons.heart_broken),
+        child: const Icon(Icons.note_add),
       ),
     );
   }
